@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mobile-Friendly Note App</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f0f4f7;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            padding: 10px;
+        }
+
+        .note-container {
+            width: 100%;
+            max-width: 400px;
+            background-color: #fff;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            position: relative;
+        }
+
+        h2 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 20px;
+        }
+
+        .note-input {
+            width: 100%;
+            height: 100px;
+            border: none;
+            border-radius: 8px;
+            padding: 10px;
+            font-size: 16px;
+            outline: none;
+            resize: none;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            margin-bottom: 20px;
+            position: sticky;
+            top: 0;
+        }
+
+        .note-input:focus {
+            transform: translateY(0);
+        }
+
+        .save-btn {
+            width: 100%;
+            padding: 10px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            background-color: #5d9cec;
+            color: white;
+            transition: background-color 0.3s ease;
+            margin-bottom: 20px;
+        }
+
+        .save-btn:hover {
+            background-color: #4a8ae0;
+        }
+
+        .notes-list {
+            max-height: 250px;
+            overflow-y: auto;
+            padding-right: 10px;
+        }
+
+        .note {
+            background-color: #ffe9a7;
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease;
+        }
+
+        .note:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        }
+
+        .edit-btn, .delete-btn {
+            padding: 5px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            color: white;
+            transition: background-color 0.3s ease;
+            font-size: 14px;
+        }
+
+        .edit-btn {
+            background-color: #f0ad4e;
+        }
+
+        .edit-btn:hover {
+            background-color: #ec971f;
+        }
+
+        .delete-btn {
+            background-color: #d9534f;
+            margin-left: 5px;
+        }
+
+        .delete-btn:hover {
+            background-color: #c9302c;
+        }
+
+        .button-container {
+            display: flex;
+            justify-content: flex-end;
+            margin-top: 10px;
+        }
+
+        @media (max-width: 600px) {
+            .note-container {
+                padding: 15px;
+            }
+
+            .save-btn, .edit-btn, .delete-btn {
+                font-size: 14px;
+                padding: 8px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="note-container">
+    <h2>Note App</h2>
+    <textarea class="note-input" placeholder="Write your note here..."></textarea>
+    <button class="save-btn" onclick="saveNote()">Save Note</button>
+    
+    <div class="notes-list" id="notesList"></div>
+</div>
+
+<script>
+    let editIndex = null;
+
+    // Load notes from local storage on page load
+    window.onload = function() {
+        const notes = JSON.parse(localStorage.getItem('notes')) || [];
+        notes.forEach((note) => {
+            displayNote(note);
+        });
+    };
+
+    function saveNote() {
+        const noteInput = document.querySelector('.note-input');
+        const noteText = noteInput.value.trim();
+
+        if (noteText === "") {
+            alert('Please enter a note');
+            return;
+        }
+
+        const notes = JSON.parse(localStorage.getItem('notes')) || [];
+
+        if (editIndex !== null) {
+            // Update existing note
+            notes[editIndex] = noteText;
+            editIndex = null; // Reset edit index after editing
+        } else {
+            // Add new note
+            notes.push(noteText);
+        }
+
+        // Save updated notes to local storage
+        localStorage.setItem('notes', JSON.stringify(notes));
+        noteInput.value = ""; // Clear the input field
+        renderNotes(); // Re-render the notes
+    }
+
+    function renderNotes() {
+        const notesList = document.getElementById('notesList');
+        notesList.innerHTML = ''; // Clear existing notes
+        const notes = JSON.parse(localStorage.getItem('notes')) || [];
+        notes.forEach((note, index) => {
+            displayNote(note, index);
+        });
+    }
+
+    function displayNote(noteText, index) {
+        const note = document.createElement('div');
+        note.classList.add('note');
+        note.innerHTML = `<span class="note-text">${noteText}</span>
+            <div class="button-container">
+                <button class="edit-btn" onclick="editNote(${index})">Edit</button>
+                <button class="delete-btn" onclick="deleteNote(${index})">Delete</button>
+            </div>`;
+        document.getElementById('notesList').appendChild(note);
+    }
+
+    function editNote(index) {
+        const notes = JSON.parse(localStorage.getItem('notes')) || [];
+        document.querySelector('.note-input').value = notes[index];
+        editIndex = index; // Set the index to edit
+    }
+
+    function deleteNote(index) {
+        const notes = JSON.parse(localStorage.getItem('notes')) || [];
+        notes.splice(index, 1); // Remove note from the array
+        localStorage.setItem('notes', JSON.stringify(notes)); // Update local storage
+        renderNotes(); // Re-render the notes
+    }
+</script>
+
+</body>
+</html>
